@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message CreateUserRequest {
+	string username = 1;
+	string passphrase = 2;
+}
+
+message CreateUserResponse {}
+
+service Chat {
+	rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+}
