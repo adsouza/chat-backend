@@ -17,6 +17,10 @@ func newStore(t *testing.T) (*storage.SQLDB, func()) {
 		db.Close()
 		t.Fatalf("Unable to create new users table in test DB: %v.", err)
 	}
+	if _, err := db.Exec(storage.ConversationTableInitCmd); err != nil {
+		db.Close()
+		t.Fatalf("Unable to create new conversations table in test DB: %v.", err)
+	}
 	return storage.NewSQLDB(db), func() { db.Close() }
 }
 
@@ -24,14 +28,30 @@ func TestHappyPath(t *testing.T) {
 	store, closer := newStore(t)
 	defer closer()
 	if err := store.AddUser("testuser1", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
-		t.Errorf("Unable to add a new row to the users table: %v.", err)
+		t.Fatalf("Unable to add a new row to the users table: %v.", err)
 	}
 	hash, err := store.FetchHash("testuser1")
 	if err != nil {
-		t.Errorf("Unable to retrieve hash for specified user: %v.", err)
+		t.Fatalf("Unable to retrieve hash for recently added user: %v.", err)
 	}
 	if got, want := string(hash), "012345678901234567890123456789012345678901234567890123456789"; got != want {
 		t.Errorf("Hash mismatch:\ngot  %v\nwant %v", got, want)
+	}
+	if err := store.AddMessage("convo1", "testuser1", "Hello!"); err != nil {
+		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
+	}
+	messages, err := store.ReadMessages("convo1")
+	if err != nil {
+		t.Fatalf("Unable to retrieve messages for specified conversation: %v.", err)
+	}
+	if messages == nil {
+		t.Fatalf("No messages found for recently initiated conversation.")
+	}
+	if got, want := messages[0].Content, "Hello!"; got != want {
+		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
+	}
+	if got, want := messages[0].Author, "testuser1"; got != want {
+		t.Errorf("Message author mismatch: got %v, want %v.", got, want)
 	}
 }
 
