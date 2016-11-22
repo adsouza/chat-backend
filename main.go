@@ -21,7 +21,7 @@ func main() {
 
 	db, err := sql.Open("sqlite3", *dsn)
 	if err != nil {
-		log.Fatalf("Could not open connection to DB: %v", err)
+		log.Fatalf("Could not open connection to DB: %v.", err)
 	}
 	defer db.Close()
 	// Blindly try to create the users table because if it already exists then this will safely fail.
@@ -29,7 +29,7 @@ func main() {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		log.Fatalf("Could not bind to port: %v", err)
+		log.Fatalf("Could not bind to port: %v.", err)
 	}
 	grpcServer := grpc.NewServer()
 	ctlr := logic.NewUserController(storage.NewSQLDB(db))
