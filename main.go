@@ -35,8 +35,9 @@ func main() {
 		log.Fatalf("Could not bind to port: %v.", err)
 	}
 	grpcServer := grpc.NewServer()
-	ctlr := logic.NewUserController(storage.NewSQLDB(db))
-	api.RegisterChatServer(grpcServer, api.NewChatServer(ctlr))
+	userCtlr := logic.NewUserController(storage.NewSQLDB(db))
+	msgCtlr := logic.NewMessageController(storage.NewSQLDB(db))
+	api.RegisterChatServer(grpcServer, api.NewChatServer(userCtlr, msgCtlr))
 	log.Println("Chat service is now ready!")
 	grpcServer.Serve(lis)
 }
