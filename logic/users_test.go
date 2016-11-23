@@ -24,10 +24,10 @@ func (m *mockUserStore) FetchHash(username string) ([]byte, error) {
 	return hash, nil
 }
 
-func TestHappyPath(t *testing.T) {
+func TestUsersHappyPath(t *testing.T) {
 	userCtlr := logic.NewUserController(&mockUserStore{hashes: make(map[string][]byte)})
 	if err := userCtlr.CreateUser("testuser1", "123456789abcdefg"); err != nil {
-		t.Errorf("16 char passphrase was not permitted but should be.")
+		t.Fatalf("16 char passphrase was not permitted but should be.")
 	}
 	if err := userCtlr.CreateUser("testuser2", "123456789abcdefg"); err != nil {
 		t.Errorf("2nd user account was not permitted but should be.")
