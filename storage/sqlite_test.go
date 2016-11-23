@@ -14,6 +14,9 @@ func newStore(t *testing.T) (*storage.SQLDB, func()) {
 	if err != nil {
 		t.Fatalf("Unable to open connection to DB: %v.", err)
 	}
+	if _, err := db.Exec(storage.PragmaCmd); err != nil {
+		t.Errorf("Unable to enable foreign key constraints in test DB: %v.", err)
+	}
 	if _, err := db.Exec(storage.UserTableInitCmd); err != nil {
 		db.Close()
 		t.Fatalf("Unable to create new users table in test DB: %v.", err)
@@ -89,5 +92,13 @@ func TestMessageOrder(t *testing.T) {
 	}
 	if got, want := messages[1].Content, "Hello!"; got != want {
 		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
+	}
+}
+
+func TestMsgFromNonexistentUser(t *testing.T) {
+	store, closer := newStore(t)
+	defer closer()
+	if err := store.AddMessage("convo1", "testuser1", "Hello!"); err == nil {
+		t.Errorf("Able to add a new row to the messages table with a nonexistent author!")
 	}
 }

@@ -1,2 +1,1 @@
-rm api/api.pb.go
-rm chat.db
+rm api/api.pb.go chat.db

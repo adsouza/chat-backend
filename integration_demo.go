@@ -19,8 +19,14 @@ func main() {
 		log.Fatalf("Could not open connection to DB: %v.", err)
 	}
 	defer db.Close()
+	if _, err := db.Exec(storage.PragmaCmd); err != nil {
+		log.Printf("Unable to enable foreign key constraints in DB: %v.", err)
+	}
 	if _, err := db.Exec(storage.UserTableInitCmd); err != nil {
 		log.Fatalf("Unable to create new users table in test DB: %v.", err)
+	}
+	if _, err := db.Exec(storage.ConversationTableInitCmd); err != nil {
+		log.Fatalf("Unable to create new conversations table in test DB: %v.", err)
 	}
 
 	lis, err := net.Listen("tcp", ":12345")

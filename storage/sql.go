@@ -7,8 +7,14 @@ import (
 )
 
 const (
-	UserTableInitCmd         = "CREATE TABLE users (username TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL)"
-	ConversationTableInitCmd = "CREATE TABLE messages (conversationid TEXT NOT NULL, timestamp NUMERIC DEFAULT CURRENT_TIMESTAMP NOT NULL, author TEXT NOT NULL, content TEXT NOT NULL)"
+	PragmaCmd                = "PRAGMA foreign_keys = ON"
+	UserTableInitCmd         = "CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL)"
+	ConversationTableInitCmd = `CREATE TABLE IF NOT EXISTS messages (
+		conversationid TEXT NOT NULL, 
+		timestamp NUMERIC DEFAULT CURRENT_TIMESTAMP NOT NULL, 
+		author TEXT NOT NULL,
+		content TEXT NOT NULL,
+		FOREIGN KEY (author) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT)`
 )
 
 type Message struct {

@@ -24,8 +24,11 @@ func main() {
 		log.Fatalf("Could not open connection to DB: %v.", err)
 	}
 	defer db.Close()
-	// Blindly try to create the users table because if it already exists then this will safely fail.
+	if _, err := db.Exec(storage.PragmaCmd); err != nil {
+		log.Printf("Unable to enable foreign key constraints in DB: %v.", err)
+	}
 	db.Exec(storage.UserTableInitCmd)
+	db.Exec(storage.ConversationTableInitCmd)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
