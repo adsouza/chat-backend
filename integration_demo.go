@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net"
+	"time"
 
 	"github.com/adsouza/chat-backend/api"
 	"github.com/adsouza/chat-backend/logic"
@@ -49,5 +50,34 @@ func main() {
 	_, err = client.CreateUser(context.Background(), &api.CreateUserRequest{Username: "testuser1", Passphrase: "0123456789abcdef"})
 	if err != nil {
 		log.Fatalf("Could not create a user account: %v.", err)
+	}
+	_, err = client.CreateUser(context.Background(), &api.CreateUserRequest{Username: "testuser2", Passphrase: "0123456789abcdef"})
+	if err != nil {
+		log.Fatalf("Could not create 2nd user account: %v.", err)
+	}
+	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser1", Recipient: "testuser2", Content: "How's it going?"})
+	if err != nil {
+		log.Fatalf("Could not send a message: %v.", err)
+	}
+	time.Sleep(time.Second)
+	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser2", Recipient: "testuser1", Content: "Can't complain."})
+	if err != nil {
+		log.Fatalf("Could not send 2nd message: %v.", err)
+	}
+	conversation, err := client.FetchMessages(context.Background(), &api.FetchMessagesRequest{User1: "testuser1", User2: "testuser2"})
+	if err != nil {
+		log.Fatalf("Could not fetch messages: %v.", err)
+	}
+	if len(conversation.Messages) == 0 {
+		log.Fatalf("No conversation found.")
+	}
+	if got, want := len(conversation.Messages), 2; got != want {
+		log.Fatalf("Conversation has wrong number of messages: got %v, want %v.", got, want)
+	}
+	if got, want := conversation.Messages[0].Content, "Can't complain."; got != want {
+		log.Printf("Message content mismatch: got %v, want %v.", got, want)
+	}
+	if got, want := conversation.Messages[1].Content, "How's it going?"; got != want {
+		log.Printf("Message content mismatch: got %v, want %v.", got, want)
 	}
 }

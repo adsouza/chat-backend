@@ -66,4 +66,21 @@ func TestHappyPath(t *testing.T) {
 	if got, want := conversation[1].Content, "Bonjour!"; got != want {
 		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
 	}
+	// Now make sure it works with the usernames in reverse order too.
+	conversation, err = msgCtlr.FetchMessages("testuser2", "testuser1")
+	if err != nil {
+		t.Fatalf("Unable to fetch a conversation: %v.", err)
+	}
+	if conversation == nil || len(conversation) == 0 {
+		t.Fatalf("No conversation found.")
+	}
+	if got, want := len(conversation), 2; got != want {
+		t.Fatalf("Conversation has wrong number of messages: got %v, want %v.", got, want)
+	}
+	if got, want := conversation[0].Content, "A revoir."; got != want {
+		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
+	}
+	if got, want := conversation[1].Content, "Bonjour!"; got != want {
+		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
+	}
 }

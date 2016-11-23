@@ -35,4 +35,6 @@ message FetchMessagesResponse {
 
 service Chat {
 	rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+	rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {}
+	rpc FetchMessages(FetchMessagesRequest) returns (FetchMessagesResponse) {}
 }
