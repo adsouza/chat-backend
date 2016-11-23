@@ -13,7 +13,8 @@ type mockMsgStore struct {
 }
 
 func (m *mockMsgStore) AddMessage(conversationId, author, content string) error {
-	m.conversations[conversationId] = append(m.conversations[conversationId], storage.Message{Author: author, Content: content})
+	// Add the new message to the beginning.
+	m.conversations[conversationId] = append([]storage.Message{storage.Message{Author: author, Content: content}}, m.conversations[conversationId]...)
 	return nil
 }
 
@@ -40,17 +41,29 @@ func TestHappyPath(t *testing.T) {
 		t.Fatalf("16 char passphrase was not permitted but should be.")
 	}
 	if err := userCtlr.CreateUser("testuser2", "123456789abcdefg"); err != nil {
-		t.Errorf("2nd user account was not permitted but should be.")
+		t.Fatalf("2nd user account was not permitted but should be.")
 	}
 	msgCtlr := logic.NewMessageController(mockDb)
 	if err := msgCtlr.SendMessage("testuser1", "testuser2", "Bonjour!"); err != nil {
 		t.Fatalf("Sending a message failed: %v.", err)
 	}
+	if err := msgCtlr.SendMessage("testuser2", "testuser1", "A revoir."); err != nil {
+		t.Fatalf("Sending a 2nd message failed: %v.", err)
+	}
 	conversation, err := msgCtlr.FetchMessages("testuser1", "testuser2")
 	if err != nil {
 		t.Fatalf("Unable to fetch a conversation: %v.", err)
 	}
-	if len(conversation) < 1 {
+	if conversation == nil || len(conversation) == 0 {
 		t.Fatalf("No conversation found.")
+	}
+	if got, want := len(conversation), 2; got != want {
+		t.Fatalf("Conversation has wrong number of messages: got %v, want %v.", got, want)
+	}
+	if got, want := conversation[0].Content, "A revoir."; got != want {
+		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
+	}
+	if got, want := conversation[1].Content, "Bonjour!"; got != want {
+		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
 	}
 }

@@ -87,6 +87,9 @@ func TestMessageOrder(t *testing.T) {
 	if messages == nil {
 		t.Fatalf("No messages found for recently initiated conversation.")
 	}
+	if got, want := len(messages), 2; got != want {
+		t.Fatalf("Wrong number of messages retrieved: got %v, want %v.", got, want)
+	}
 	if got, want := messages[0].Content, "Goodbye."; got != want {
 		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
 	}
