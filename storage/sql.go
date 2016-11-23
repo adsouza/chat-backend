@@ -48,7 +48,8 @@ func (s *SQLDB) AddMessage(conversationId, author, content string) error {
 }
 
 func (s *SQLDB) ReadMessages(conversationId string) ([]Message, error) {
-	rows, err := s.Query("SELECT timestamp, author, content FROM messages WHERE conversationid = ?", conversationId)
+	//TODO: use a prepared query.
+	rows, err := s.Query("SELECT timestamp, author, content FROM messages WHERE conversationid = ? ORDER BY timestamp DESC", conversationId)
 	if err != nil {
 		return nil, fmt.Errorf("unable to execute query for messages in specified conversation: %v", err)
 	}

@@ -3,6 +3,7 @@ package storage_test
 import (
 	"database/sql"
 	"testing"
+	"time"
 
 	"github.com/adsouza/chat-backend/storage"
 	_ "github.com/mattn/go-sqlite3"
@@ -60,5 +61,33 @@ func TestNonexistentUser(t *testing.T) {
 	defer closer()
 	if _, err := store.FetchHash("testuser1"); err == nil {
 		t.Errorf("Able to retrieve hash for nonexistent user!")
+	}
+}
+
+func TestMessageOrder(t *testing.T) {
+	store, closer := newStore(t)
+	defer closer()
+	if err := store.AddUser("testuser1", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
+		t.Fatalf("Unable to add a new row to the users table: %v.", err)
+	}
+	if err := store.AddMessage("convo1", "testuser1", "Hello!"); err != nil {
+		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
+	}
+	time.Sleep(time.Second)
+	if err := store.AddMessage("convo1", "testuser1", "Goodbye."); err != nil {
+		t.Fatalf("Unable to add a 2nd row to the messages table: %v.", err)
+	}
+	messages, err := store.ReadMessages("convo1")
+	if err != nil {
+		t.Fatalf("Unable to retrieve messages for specified conversation: %v.", err)
+	}
+	if messages == nil {
+		t.Fatalf("No messages found for recently initiated conversation.")
+	}
+	if got, want := messages[0].Content, "Goodbye."; got != want {
+		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
+	}
+	if got, want := messages[1].Content, "Hello!"; got != want {
+		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
 	}
 }
