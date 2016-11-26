@@ -54,20 +54,21 @@ func (s *SQLDB) AddMessage(sender, recipient, content string) error {
 	return err
 }
 
-func (s *SQLDB) ReadMessages(user1, user2 string) ([]Message, error) {
+func (s *SQLDB) ReadMessagesBefore(user1, user2 string, before int64) ([]Message, error) {
 	//TODO: use a prepared query.
-	rows, err := s.Query(`SELECT timestamp, sender, content FROM messages WHERE sender = ? AND recipient = ? 
-	UNION ALL SELECT timestamp, sender, content FROM messages WHERE sender = ? AND recipient = ? ORDER BY timestamp DESC`,
-		user1, user2, user2, user1)
+	rows, err := s.Query(`SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ? UNION ALL
+	SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ? ORDER BY rowid DESC`,
+		before, user1, user2, before, user2, user1)
 	if err != nil {
-		return nil, fmt.Errorf("unable to execute query for messages in specified conversation: %v", err)
+		return nil, fmt.Errorf("unable to execute query for messages between specified users: %v", err)
 	}
 	defer rows.Close()
+	var rowid int64
 	var messages []Message
 	msg := Message{}
 	var ts string
 	for rows.Next() {
-		err := rows.Scan(&ts, &msg.Author, &msg.Content)
+		err := rows.Scan(&rowid, &ts, &msg.Author, &msg.Content)
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse data from DB into message struct: %v", err)
 		}

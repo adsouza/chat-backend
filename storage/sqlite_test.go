@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	"database/sql"
+	"math"
 	"testing"
 	"time"
 
@@ -47,7 +48,7 @@ func TestHappyPath(t *testing.T) {
 	if err := store.AddMessage("testuser1", "testuser2", "Hello!"); err != nil {
 		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
-	messages, err := store.ReadMessages("testuser1", "testuser2")
+	messages, err := store.ReadMessagesBefore("testuser1", "testuser2", math.MaxInt64)
 	if err != nil {
 		t.Fatalf("Unable to retrieve messages for specified conversation: %v.", err)
 	}
@@ -86,7 +87,7 @@ func TestMessageOrder(t *testing.T) {
 	if err := store.AddMessage("testuser2", "testuser1", "Goodbye."); err != nil {
 		t.Fatalf("Unable to add a 2nd row to the messages table: %v.", err)
 	}
-	messages, err := store.ReadMessages("testuser1", "testuser2")
+	messages, err := store.ReadMessagesBefore("testuser1", "testuser2", math.MaxInt64)
 	if err != nil {
 		t.Fatalf("Unable to retrieve messages for specified conversation: %v.", err)
 	}

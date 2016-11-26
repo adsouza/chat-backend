@@ -26,7 +26,7 @@ func (m *mockMsgStore) AddMessage(sender, recipient, content string) error {
 	return nil
 }
 
-func (m *mockMsgStore) ReadMessages(user1, user2 string) ([]storage.Message, error) {
+func (m *mockMsgStore) ReadMessagesBefore(user1, user2 string, before int64) ([]storage.Message, error) {
 	conversationId := conversationIdFromParticipants(user1, user2)
 	conversation, ok := m.conversations[conversationId]
 	if !ok {

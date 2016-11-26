@@ -1,12 +1,14 @@
 package logic
 
 import (
+	"math"
+
 	"github.com/adsouza/chat-backend/storage"
 )
 
 type MsgStore interface {
 	AddMessage(sender, recipient, content string) error
-	ReadMessages(user1, user2 string) ([]storage.Message, error)
+	ReadMessagesBefore(user1, user2 string, before int64) ([]storage.Message, error)
 }
 
 type Db interface {
@@ -27,5 +29,5 @@ func (c *msgController) SendMessage(sender, recipient, message string) error {
 }
 
 func (c *msgController) FetchMessages(user1, user2 string) ([]storage.Message, error) {
-	return c.db.ReadMessages(user1, user2)
+	return c.db.ReadMessagesBefore(user1, user2, math.MaxInt64)
 }
