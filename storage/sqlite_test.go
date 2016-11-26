@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"math"
 	"testing"
-	"time"
 
 	"github.com/adsouza/chat-backend/storage"
 	_ "github.com/mattn/go-sqlite3"
@@ -83,9 +82,11 @@ func TestMessageOrder(t *testing.T) {
 	if err := store.AddMessage("testuser1", "testuser2", "Hello!"); err != nil {
 		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
-	time.Sleep(time.Second)
-	if err := store.AddMessage("testuser2", "testuser1", "Goodbye."); err != nil {
+	if err := store.AddMessage("testuser2", "testuser1", "Nice to meet you."); err != nil {
 		t.Fatalf("Unable to add a 2nd row to the messages table: %v.", err)
+	}
+	if err := store.AddMessage("testuser1", "testuser2", "Goodbye."); err != nil {
+		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
 	messages, err := store.ReadMessagesBefore("testuser1", "testuser2", math.MaxInt64)
 	if err != nil {
@@ -94,13 +95,16 @@ func TestMessageOrder(t *testing.T) {
 	if messages == nil {
 		t.Fatalf("No messages found for recently initiated conversation.")
 	}
-	if got, want := len(messages), 2; got != want {
+	if got, want := len(messages), 3; got != want {
 		t.Fatalf("Wrong number of messages retrieved: got %v, want %v.", got, want)
 	}
 	if got, want := messages[0].Content, "Goodbye."; got != want {
 		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
 	}
-	if got, want := messages[1].Content, "Hello!"; got != want {
+	if got, want := messages[1].Content, "Nice to meet you."; got != want {
+		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
+	}
+	if got, want := messages[2].Content, "Hello!"; got != want {
 		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
 	}
 }
