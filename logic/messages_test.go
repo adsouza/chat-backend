@@ -2,6 +2,7 @@ package logic_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/adsouza/chat-backend/logic"
@@ -26,13 +27,13 @@ func (m *mockMsgStore) AddMessage(sender, recipient, content string) error {
 	return nil
 }
 
-func (m *mockMsgStore) ReadMessagesBefore(user1, user2 string, before int64) ([]storage.Message, error) {
+func (m *mockMsgStore) ReadMessagesBefore(user1, user2 string, before int64) ([]storage.Message, int64, error) {
 	conversationId := conversationIdFromParticipants(user1, user2)
 	conversation, ok := m.conversations[conversationId]
 	if !ok {
-		return nil, fmt.Errorf("no row with key %v exists", conversationId)
+		return nil, math.MaxInt64, fmt.Errorf("no row with key %v exists", conversationId)
 	}
-	return conversation, nil
+	return conversation, math.MaxInt64, nil
 }
 
 type mockDb struct {
@@ -59,7 +60,7 @@ func TestHappyPath(t *testing.T) {
 	if err := msgCtlr.SendMessage("testuser2", "testuser1", "A revoir."); err != nil {
 		t.Fatalf("Sending a 2nd message failed: %v.", err)
 	}
-	conversation, err := msgCtlr.FetchMessages("testuser1", "testuser2")
+	conversation, _, err := msgCtlr.FetchMessagesBefore("testuser1", "testuser2", math.MaxInt64)
 	if err != nil {
 		t.Fatalf("Unable to fetch a conversation: %v.", err)
 	}
@@ -76,7 +77,7 @@ func TestHappyPath(t *testing.T) {
 		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
 	}
 	// Now make sure it works with the usernames in reverse order too.
-	conversation, err = msgCtlr.FetchMessages("testuser2", "testuser1")
+	conversation, _, err = msgCtlr.FetchMessagesBefore("testuser2", "testuser1", math.MaxInt64)
 	if err != nil {
 		t.Fatalf("Unable to fetch a conversation: %v.", err)
 	}

@@ -3,6 +3,7 @@ package storage
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -54,29 +55,30 @@ func (s *SQLDB) AddMessage(sender, recipient, content string) error {
 	return err
 }
 
-func (s *SQLDB) ReadMessagesBefore(user1, user2 string, before int64) ([]Message, error) {
+func (s *SQLDB) ReadMessagesBefore(user1, user2 string, before int64) ([]Message, int64, error) {
 	//TODO: use a prepared query.
-	rows, err := s.Query(`SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ? UNION ALL
-	SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ? ORDER BY rowid DESC`,
+	rows, err := s.Query(`SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ?
+	UNION ALL SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ?
+	ORDER BY rowid DESC`,
 		before, user1, user2, before, user2, user1)
 	if err != nil {
-		return nil, fmt.Errorf("unable to execute query for messages between specified users: %v", err)
+		return nil, math.MaxInt64, fmt.Errorf("unable to execute query for messages between specified users: %v", err)
 	}
 	defer rows.Close()
-	var rowid int64
+	var rowId int64
 	var messages []Message
 	msg := Message{}
 	var ts string
 	for rows.Next() {
-		err := rows.Scan(&rowid, &ts, &msg.Author, &msg.Content)
+		err := rows.Scan(&rowId, &ts, &msg.Author, &msg.Content)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse data from DB into message struct: %v", err)
+			return nil, math.MaxInt64, fmt.Errorf("unable to parse data from DB into message struct: %v", err)
 		}
 		msg.Timestamp, err = time.Parse("2006-01-02 15:04:05", ts)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse timestamp from DB: %v", err)
+			return nil, math.MaxInt64, fmt.Errorf("unable to parse timestamp from DB: %v", err)
 		}
 		messages = append(messages, msg)
 	}
-	return messages, rows.Err()
+	return messages, rowId, rows.Err()
 }

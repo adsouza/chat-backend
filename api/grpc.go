@@ -1,6 +1,9 @@
 package api
 
 import (
+	"fmt"
+	"math"
+
 	"github.com/adsouza/chat-backend/storage"
 	"golang.org/x/net/context"
 )
@@ -11,7 +14,7 @@ type UserController interface {
 
 type MessageController interface {
 	SendMessage(sender, recipient, message string) error
-	FetchMessages(user1, user2 string) ([]storage.Message, error)
+	FetchMessagesBefore(user1, user2 string, before int64) ([]storage.Message, int64, error)
 }
 
 type chatServer struct {
@@ -32,8 +35,15 @@ func (c *chatServer) SendMessage(ctx context.Context, req *SendMessageRequest) (
 }
 
 func (c *chatServer) FetchMessages(ctx context.Context, req *FetchMessagesRequest) (*FetchMessagesResponse, error) {
-	messages, err := c.msgController.FetchMessages(req.User1, req.User2)
-	resp := &FetchMessagesResponse{}
+	if req.User1 == "" || req.User2 == "" {
+		return &FetchMessagesResponse{}, fmt.Errorf("both the User1 & User2 fields are required")
+	}
+	before := req.ContinuationToken
+	if before == 0 {
+		before = math.MaxInt64
+	}
+	messages, continuationToken, err := c.msgController.FetchMessagesBefore(req.User1, req.User2, before)
+	resp := &FetchMessagesResponse{ContinuationToken: continuationToken}
 	for _, msg := range messages {
 		resp.Messages = append(resp.Messages, &Message{Timestamp: msg.Timestamp.Unix(), Author: msg.Author, Content: msg.Content})
 	}
