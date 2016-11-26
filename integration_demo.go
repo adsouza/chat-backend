@@ -60,9 +60,14 @@ func main() {
 		log.Fatalf("Could not send a message: %v.", err)
 	}
 	time.Sleep(time.Second)
-	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser2", Recipient: "testuser1", Content: "Can't complain."})
+	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser2", Recipient: "testuser1", Content: "Can't complain. You?"})
 	if err != nil {
 		log.Fatalf("Could not send 2nd message: %v.", err)
+	}
+	time.Sleep(time.Second)
+	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser1", Recipient: "testuser2", Content: "Same here."})
+	if err != nil {
+		log.Fatalf("Could not send 3rd message: %v.", err)
 	}
 	conversation, err := client.FetchMessages(context.Background(), &api.FetchMessagesRequest{User1: "testuser1", User2: "testuser2"})
 	if err != nil {
@@ -71,13 +76,16 @@ func main() {
 	if len(conversation.Messages) == 0 {
 		log.Fatalf("No conversation found.")
 	}
-	if got, want := len(conversation.Messages), 2; got != want {
+	if got, want := len(conversation.Messages), 3; got != want {
 		log.Fatalf("Conversation has wrong number of messages: got %v, want %v.", got, want)
 	}
-	if got, want := conversation.Messages[0].Content, "Can't complain."; got != want {
+	if got, want := conversation.Messages[0].Content, "Same here."; got != want {
 		log.Printf("Message content mismatch: got %v, want %v.", got, want)
 	}
-	if got, want := conversation.Messages[1].Content, "How's it going?"; got != want {
+	if got, want := conversation.Messages[1].Content, "Can't complain. You?"; got != want {
+		log.Printf("Message content mismatch: got %v, want %v.", got, want)
+	}
+	if got, want := conversation.Messages[2].Content, "How's it going?"; got != want {
 		log.Printf("Message content mismatch: got %v, want %v.", got, want)
 	}
 }

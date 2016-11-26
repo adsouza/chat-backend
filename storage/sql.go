@@ -10,11 +10,12 @@ const (
 	PragmaCmd                = "PRAGMA foreign_keys = ON"
 	UserTableInitCmd         = "CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL)"
 	ConversationTableInitCmd = `CREATE TABLE IF NOT EXISTS messages (
-		conversationid TEXT NOT NULL, 
 		timestamp NUMERIC DEFAULT CURRENT_TIMESTAMP NOT NULL, 
-		author TEXT NOT NULL,
+		sender TEXT NOT NULL,
+		recipient TEXT NOT NULL,
 		content TEXT NOT NULL,
-		FOREIGN KEY (author) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT)`
+		FOREIGN KEY (sender) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT,
+		FOREIGN KEY (recipient) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT)`
 )
 
 type Message struct {
@@ -48,14 +49,16 @@ func (s *SQLDB) FetchHash(username string) ([]byte, error) {
 	}
 }
 
-func (s *SQLDB) AddMessage(conversationId, author, content string) error {
-	_, err := s.Exec("INSERT INTO messages (conversationid, author, content) VALUES (?, ?, ?)", conversationId, author, content)
+func (s *SQLDB) AddMessage(sender, recipient, content string) error {
+	_, err := s.Exec("INSERT INTO messages (sender, recipient, content) VALUES (?, ?, ?)", sender, recipient, content)
 	return err
 }
 
-func (s *SQLDB) ReadMessages(conversationId string) ([]Message, error) {
+func (s *SQLDB) ReadMessages(user1, user2 string) ([]Message, error) {
 	//TODO: use a prepared query.
-	rows, err := s.Query("SELECT timestamp, author, content FROM messages WHERE conversationid = ? ORDER BY timestamp DESC", conversationId)
+	rows, err := s.Query(`SELECT timestamp, sender, content FROM messages WHERE sender = ? AND recipient = ? 
+	UNION ALL SELECT timestamp, sender, content FROM messages WHERE sender = ? AND recipient = ? ORDER BY timestamp DESC`,
+		user1, user2, user2, user1)
 	if err != nil {
 		return nil, fmt.Errorf("unable to execute query for messages in specified conversation: %v", err)
 	}

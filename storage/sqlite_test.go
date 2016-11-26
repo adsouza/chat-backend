@@ -41,10 +41,13 @@ func TestHappyPath(t *testing.T) {
 	if got, want := string(hash), "012345678901234567890123456789012345678901234567890123456789"; got != want {
 		t.Errorf("Hash mismatch:\ngot  %v\nwant %v", got, want)
 	}
-	if err := store.AddMessage("convo1", "testuser1", "Hello!"); err != nil {
+	if err := store.AddUser("testuser2", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
+		t.Fatalf("Unable to add a 2nd row to the users table: %v.", err)
+	}
+	if err := store.AddMessage("testuser1", "testuser2", "Hello!"); err != nil {
 		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
-	messages, err := store.ReadMessages("convo1")
+	messages, err := store.ReadMessages("testuser1", "testuser2")
 	if err != nil {
 		t.Fatalf("Unable to retrieve messages for specified conversation: %v.", err)
 	}
@@ -73,14 +76,17 @@ func TestMessageOrder(t *testing.T) {
 	if err := store.AddUser("testuser1", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
 		t.Fatalf("Unable to add a new row to the users table: %v.", err)
 	}
-	if err := store.AddMessage("convo1", "testuser1", "Hello!"); err != nil {
+	if err := store.AddUser("testuser2", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
+		t.Fatalf("Unable to add a new row to the users table: %v.", err)
+	}
+	if err := store.AddMessage("testuser1", "testuser2", "Hello!"); err != nil {
 		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
 	time.Sleep(time.Second)
-	if err := store.AddMessage("convo1", "testuser1", "Goodbye."); err != nil {
+	if err := store.AddMessage("testuser2", "testuser1", "Goodbye."); err != nil {
 		t.Fatalf("Unable to add a 2nd row to the messages table: %v.", err)
 	}
-	messages, err := store.ReadMessages("convo1")
+	messages, err := store.ReadMessages("testuser1", "testuser2")
 	if err != nil {
 		t.Fatalf("Unable to retrieve messages for specified conversation: %v.", err)
 	}
@@ -101,7 +107,21 @@ func TestMessageOrder(t *testing.T) {
 func TestMsgFromNonexistentUser(t *testing.T) {
 	store, closer := newStore(t)
 	defer closer()
-	if err := store.AddMessage("convo1", "testuser1", "Hello!"); err == nil {
-		t.Errorf("Able to add a new row to the messages table with a nonexistent author!")
+	if err := store.AddUser("testuser1", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
+		t.Fatalf("Unable to add a new row to the users table: %v.", err)
+	}
+	if err := store.AddMessage("testuser2", "testuser1", "Hello!"); err == nil {
+		t.Errorf("Able to add a new row to the messages table with a nonexistent sender!")
+	}
+}
+
+func TestMsgToNonexistentUser(t *testing.T) {
+	store, closer := newStore(t)
+	defer closer()
+	if err := store.AddUser("testuser1", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
+		t.Fatalf("Unable to add a new row to the users table: %v.", err)
+	}
+	if err := store.AddMessage("testuser1", "testuser2", "Hello!"); err == nil {
+		t.Errorf("Able to add a new row to the messages table with a nonexistent recipient!")
 	}
 }

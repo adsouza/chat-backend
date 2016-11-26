@@ -8,17 +8,26 @@ import (
 	"github.com/adsouza/chat-backend/storage"
 )
 
+func conversationIdFromParticipants(user1, user2 string) string {
+	if user1 < user2 {
+		return fmt.Sprintf("%s%c%s", user1, ':', user2)
+	}
+	return fmt.Sprintf("%s%c%s", user2, ':', user1)
+}
+
 type mockMsgStore struct {
 	conversations map[string][]storage.Message
 }
 
-func (m *mockMsgStore) AddMessage(conversationId, author, content string) error {
+func (m *mockMsgStore) AddMessage(sender, recipient, content string) error {
 	// Add the new message to the beginning.
-	m.conversations[conversationId] = append([]storage.Message{storage.Message{Author: author, Content: content}}, m.conversations[conversationId]...)
+	conversationId := conversationIdFromParticipants(sender, recipient)
+	m.conversations[conversationId] = append([]storage.Message{storage.Message{Author: sender, Content: content}}, m.conversations[conversationId]...)
 	return nil
 }
 
-func (m *mockMsgStore) ReadMessages(conversationId string) ([]storage.Message, error) {
+func (m *mockMsgStore) ReadMessages(user1, user2 string) ([]storage.Message, error) {
+	conversationId := conversationIdFromParticipants(user1, user2)
 	conversation, ok := m.conversations[conversationId]
 	if !ok {
 		return nil, fmt.Errorf("no row with key %v exists", conversationId)
