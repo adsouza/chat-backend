@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"net"
-	"time"
 
 	"github.com/adsouza/chat-backend/api"
 	"github.com/adsouza/chat-backend/logic"
@@ -59,12 +58,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not send a message: %v.", err)
 	}
-	time.Sleep(time.Second)
 	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser2", Recipient: "testuser1", Content: "Can't complain. You?"})
 	if err != nil {
 		log.Fatalf("Could not send 2nd message: %v.", err)
 	}
-	time.Sleep(time.Second)
 	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser1", Recipient: "testuser2", Content: "Same here."})
 	if err != nil {
 		log.Fatalf("Could not send 3rd message: %v.", err)

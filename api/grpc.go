@@ -14,7 +14,7 @@ type UserController interface {
 
 type MessageController interface {
 	SendMessage(sender, recipient, message string) error
-	FetchMessagesBefore(user1, user2 string, before int64) ([]storage.Message, int64, error)
+	FetchMessagesBefore(user1, user2 string, limit uint32, before int64) ([]storage.Message, int64, error)
 }
 
 type chatServer struct {
@@ -42,7 +42,7 @@ func (c *chatServer) FetchMessages(ctx context.Context, req *FetchMessagesReques
 	if before == 0 {
 		before = math.MaxInt64
 	}
-	messages, continuationToken, err := c.msgController.FetchMessagesBefore(req.User1, req.User2, before)
+	messages, continuationToken, err := c.msgController.FetchMessagesBefore(req.User1, req.User2, math.MaxUint32, before)
 	resp := &FetchMessagesResponse{ContinuationToken: continuationToken}
 	for _, msg := range messages {
 		resp.Messages = append(resp.Messages, &Message{Timestamp: msg.Timestamp.Unix(), Author: msg.Author, Content: msg.Content})

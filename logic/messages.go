@@ -6,7 +6,7 @@ import (
 
 type MsgStore interface {
 	AddMessage(sender, recipient, content string) error
-	ReadMessagesBefore(user1, user2 string, before int64) ([]storage.Message, int64, error)
+	ReadMessagesBefore(user1, user2 string, limit uint32, before int64) ([]storage.Message, int64, error)
 }
 
 type Db interface {
@@ -26,6 +26,6 @@ func (c *msgController) SendMessage(sender, recipient, message string) error {
 	return c.db.AddMessage(sender, recipient, message)
 }
 
-func (c *msgController) FetchMessagesBefore(user1, user2 string, before int64) ([]storage.Message, int64, error) {
-	return c.db.ReadMessagesBefore(user1, user2, before)
+func (c *msgController) FetchMessagesBefore(user1, user2 string, limit uint32, before int64) ([]storage.Message, int64, error) {
+	return c.db.ReadMessagesBefore(user1, user2, limit, before)
 }

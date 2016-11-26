@@ -55,12 +55,12 @@ func (s *SQLDB) AddMessage(sender, recipient, content string) error {
 	return err
 }
 
-func (s *SQLDB) ReadMessagesBefore(user1, user2 string, before int64) ([]Message, int64, error) {
+func (s *SQLDB) ReadMessagesBefore(user1, user2 string, limit uint32, before int64) ([]Message, int64, error) {
 	//TODO: use a prepared query.
 	rows, err := s.Query(`SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ?
 	UNION ALL SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ?
-	ORDER BY rowid DESC`,
-		before, user1, user2, before, user2, user1)
+	ORDER BY rowid DESC LIMIT ?`,
+		before, user1, user2, before, user2, user1, limit)
 	if err != nil {
 		return nil, math.MaxInt64, fmt.Errorf("unable to execute query for messages between specified users: %v", err)
 	}
