@@ -21,6 +21,7 @@ message FetchMessagesRequest {
 	string user1 = 1;
 	string user2 = 2;
 	int64 continuation_token = 3;
+	uint32 limit = 4;
 }
 
 message Message {

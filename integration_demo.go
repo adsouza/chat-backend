@@ -54,26 +54,31 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not create 2nd user account: %v.", err)
 	}
-	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser1", Recipient: "testuser2", Content: "How's it going?"})
+	_, err = client.SendMessage(context.Background(),
+		&api.SendMessageRequest{Sender: "testuser1", Recipient: "testuser2", Content: "How's it going?"})
 	if err != nil {
 		log.Fatalf("Could not send a message: %v.", err)
 	}
-	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser2", Recipient: "testuser1", Content: "Can't complain. You?"})
+	_, err = client.SendMessage(context.Background(),
+		&api.SendMessageRequest{Sender: "testuser2", Recipient: "testuser1", Content: "Can't complain. You?"})
 	if err != nil {
 		log.Fatalf("Could not send 2nd message: %v.", err)
 	}
-	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{Sender: "testuser1", Recipient: "testuser2", Content: "Same here."})
+	_, err = client.SendMessage(context.Background(),
+		&api.SendMessageRequest{Sender: "testuser1", Recipient: "testuser2", Content: "Same here."})
 	if err != nil {
 		log.Fatalf("Could not send 3rd message: %v.", err)
 	}
-	conversation, err := client.FetchMessages(context.Background(), &api.FetchMessagesRequest{User1: "testuser1", User2: "testuser2"})
+	// Fetch the most recent 2 messages in the conversation.
+	conversation, err := client.FetchMessages(context.Background(),
+		&api.FetchMessagesRequest{User1: "testuser1", User2: "testuser2", Limit: 2})
 	if err != nil {
 		log.Fatalf("Could not fetch messages: %v.", err)
 	}
 	if len(conversation.Messages) == 0 {
 		log.Fatalf("No conversation found.")
 	}
-	if got, want := len(conversation.Messages), 3; got != want {
+	if got, want := len(conversation.Messages), 2; got != want {
 		log.Fatalf("Conversation has wrong number of messages: got %v, want %v.", got, want)
 	}
 	if got, want := conversation.Messages[0].Content, "Same here."; got != want {
@@ -82,7 +87,19 @@ func main() {
 	if got, want := conversation.Messages[1].Content, "Can't complain. You?"; got != want {
 		log.Printf("Message content mismatch: got %v, want %v.", got, want)
 	}
-	if got, want := conversation.Messages[2].Content, "How's it going?"; got != want {
+	// Now fetch the rest of the conversation.
+	conversation, err = client.FetchMessages(context.Background(),
+		&api.FetchMessagesRequest{User1: "testuser1", User2: "testuser2", ContinuationToken: conversation.ContinuationToken})
+	if err != nil {
+		log.Fatalf("Could not fetch messages: %v.", err)
+	}
+	if len(conversation.Messages) == 0 {
+		log.Fatalf("No conversation found.")
+	}
+	if got, want := len(conversation.Messages), 1; got != want {
+		log.Fatalf("Conversation has wrong number of messages: got %v, want %v.", got, want)
+	}
+	if got, want := conversation.Messages[0].Content, "How's it going?"; got != want {
 		log.Printf("Message content mismatch: got %v, want %v.", got, want)
 	}
 }

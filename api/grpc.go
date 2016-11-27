@@ -42,7 +42,11 @@ func (c *chatServer) FetchMessages(ctx context.Context, req *FetchMessagesReques
 	if before == 0 {
 		before = math.MaxInt64
 	}
-	messages, continuationToken, err := c.msgController.FetchMessagesBefore(req.User1, req.User2, math.MaxUint32, before)
+	limit := req.Limit
+	if limit == 0 {
+		limit = math.MaxUint32
+	}
+	messages, continuationToken, err := c.msgController.FetchMessagesBefore(req.User1, req.User2, limit, before)
 	resp := &FetchMessagesResponse{ContinuationToken: continuationToken}
 	for _, msg := range messages {
 		resp.Messages = append(resp.Messages, &Message{Timestamp: msg.Timestamp.Unix(), Author: msg.Author, Content: msg.Content})
