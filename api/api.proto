@@ -24,7 +24,26 @@ message FetchMessagesRequest {
 	uint32 limit = 4;
 }
 
+message Video {
+	enum Source {
+		UNKNOWN = 0;
+		YOUTUBE = 1;
+		VEVO = 2;
+	}
+	Source source = 1;
+	uint32 length_in_seconds = 2;
+}
+
+message Image {
+	uint32 width = 1;
+	uint32 height = 2;
+}
+
 message Metadata {
+	oneof media {
+		Video video = 1;
+		Image image = 2;
+	}
 }
 
 message Message {
