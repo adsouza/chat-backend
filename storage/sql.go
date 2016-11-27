@@ -15,6 +15,7 @@ const (
 		sender TEXT NOT NULL,
 		recipient TEXT NOT NULL,
 		content TEXT NOT NULL,
+		metadata BLOB,
 		FOREIGN KEY (sender) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT,
 		FOREIGN KEY (recipient) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT)`
 )
@@ -50,8 +51,8 @@ func (s *SQLDB) FetchHash(username string) ([]byte, error) {
 	}
 }
 
-func (s *SQLDB) AddMessage(sender, recipient, content string) error {
-	_, err := s.Exec("INSERT INTO messages (sender, recipient, content) VALUES (?, ?, ?)", sender, recipient, content)
+func (s *SQLDB) AddMessage(sender, recipient, content string, metadata []byte) error {
+	_, err := s.Exec("INSERT INTO messages (sender, recipient, content, metadata) VALUES (?, ?, ?, ?)", sender, recipient, content, metadata)
 	return err
 }
 

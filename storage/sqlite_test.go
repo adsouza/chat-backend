@@ -44,7 +44,7 @@ func TestHappyPath(t *testing.T) {
 	if err := store.AddUser("testuser2", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
 		t.Fatalf("Unable to add a 2nd row to the users table: %v.", err)
 	}
-	if err := store.AddMessage("testuser1", "testuser2", "Hello!"); err != nil {
+	if err := store.AddMessage("testuser1", "testuser2", "Hello!", nil); err != nil {
 		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
 	messages, _, err := store.ReadMessagesBefore("testuser1", "testuser2", math.MaxUint32, math.MaxInt64)
@@ -93,13 +93,13 @@ func TestMessageOrder(t *testing.T) {
 	if err := store.AddUser("testuser2", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
 		t.Fatalf("Unable to add a new row to the users table: %v.", err)
 	}
-	if err := store.AddMessage("testuser1", "testuser2", "Hello!"); err != nil {
+	if err := store.AddMessage("testuser1", "testuser2", "Hello!", nil); err != nil {
 		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
-	if err := store.AddMessage("testuser2", "testuser1", "Nice to meet you."); err != nil {
+	if err := store.AddMessage("testuser2", "testuser1", "Nice to meet you.", nil); err != nil {
 		t.Fatalf("Unable to add a 2nd row to the messages table: %v.", err)
 	}
-	if err := store.AddMessage("testuser1", "testuser2", "Goodbye."); err != nil {
+	if err := store.AddMessage("testuser1", "testuser2", "Goodbye.", nil); err != nil {
 		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
 	messages, _, err := store.ReadMessagesBefore("testuser1", "testuser2", math.MaxUint32, math.MaxInt64)
@@ -129,7 +129,7 @@ func TestMsgFromNonexistentUser(t *testing.T) {
 	if err := store.AddUser("testuser1", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
 		t.Fatalf("Unable to add a new row to the users table: %v.", err)
 	}
-	if err := store.AddMessage("testuser2", "testuser1", "Hello!"); err == nil {
+	if err := store.AddMessage("testuser2", "testuser1", "Hello!", nil); err == nil {
 		t.Errorf("Able to add a new row to the messages table with a nonexistent sender!")
 	}
 }
@@ -140,7 +140,7 @@ func TestMsgToNonexistentUser(t *testing.T) {
 	if err := store.AddUser("testuser1", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
 		t.Fatalf("Unable to add a new row to the users table: %v.", err)
 	}
-	if err := store.AddMessage("testuser1", "testuser2", "Hello!"); err == nil {
+	if err := store.AddMessage("testuser1", "testuser2", "Hello!", nil); err == nil {
 		t.Errorf("Able to add a new row to the messages table with a nonexistent recipient!")
 	}
 }
@@ -154,13 +154,13 @@ func TestMessagePagination(t *testing.T) {
 	if err := store.AddUser("testuser2", []byte("012345678901234567890123456789012345678901234567890123456789")); err != nil {
 		t.Fatalf("Unable to add a new row to the users table: %v.", err)
 	}
-	if err := store.AddMessage("testuser1", "testuser2", "Hello!"); err != nil {
+	if err := store.AddMessage("testuser1", "testuser2", "Hello!", nil); err != nil {
 		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
-	if err := store.AddMessage("testuser2", "testuser1", "Nice to meet you."); err != nil {
+	if err := store.AddMessage("testuser2", "testuser1", "Nice to meet you.", nil); err != nil {
 		t.Fatalf("Unable to add a 2nd row to the messages table: %v.", err)
 	}
-	if err := store.AddMessage("testuser1", "testuser2", "Goodbye."); err != nil {
+	if err := store.AddMessage("testuser1", "testuser2", "Goodbye.", nil); err != nil {
 		t.Fatalf("Unable to add a new row to the messages table: %v.", err)
 	}
 	messages, cToken, err := store.ReadMessagesBefore("testuser1", "testuser2", 2, math.MaxInt64)
