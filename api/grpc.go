@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/adsouza/chat-backend/storage"
+	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 )
 
@@ -49,7 +50,12 @@ func (c *chatServer) FetchMessages(ctx context.Context, req *FetchMessagesReques
 	messages, continuationToken, err := c.msgController.FetchMessagesBefore(req.User1, req.User2, limit, before)
 	resp := &FetchMessagesResponse{ContinuationToken: continuationToken}
 	for _, msg := range messages {
-		resp.Messages = append(resp.Messages, &Message{Timestamp: msg.Timestamp.Unix(), Author: msg.Author, Content: msg.Content})
+		metadata := &Metadata{}
+		if err := proto.Unmarshal(msg.Metadata, metadata); err != nil {
+			return nil, fmt.Errorf("failure unmarshalling message metadata: %v", err)
+		}
+		resp.Messages = append(resp.Messages,
+			&Message{Timestamp: msg.Timestamp.Unix(), Author: msg.Author, Content: msg.Content, Metadata: metadata})
 	}
 	return resp, err
 }

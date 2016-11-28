@@ -33,7 +33,7 @@ func NewMessageController(db Db) *msgController {
 }
 
 func metadataFromURL(url *url.URL) *api.Metadata {
-	if strings.HasPrefix(url.Path, "/watch/") {
+	if strings.HasPrefix(url.Path, "/watch") {
 		switch url.Host {
 		case "www.youtube.com":
 			return &api.Metadata{Media: &api.Metadata_Video{Video: &api.Video{Source: api.Video_YOUTUBE}}}

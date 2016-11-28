@@ -23,6 +23,7 @@ const (
 type Message struct {
 	Timestamp       time.Time
 	Author, Content string
+	Metadata        []byte
 }
 
 type SQLDB struct {
@@ -58,8 +59,9 @@ func (s *SQLDB) AddMessage(sender, recipient, content string, metadata []byte) e
 
 func (s *SQLDB) ReadMessagesBefore(user1, user2 string, limit uint32, before int64) ([]Message, int64, error) {
 	//TODO: use a prepared query.
-	rows, err := s.Query(`SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ?
-	UNION ALL SELECT rowid, timestamp, sender, content FROM messages WHERE rowid < ? AND sender = ? AND recipient = ?
+	rows, err := s.Query(
+		`SELECT rowid, timestamp, sender, content, metadata FROM messages WHERE rowid < ? AND sender = ? AND recipient = ?
+	UNION ALL SELECT rowid, timestamp, sender, content, metadata FROM messages WHERE rowid < ? AND sender = ? AND recipient = ?
 	ORDER BY rowid DESC LIMIT ?`,
 		before, user1, user2, before, user2, user1, limit)
 	if err != nil {
@@ -71,7 +73,7 @@ func (s *SQLDB) ReadMessagesBefore(user1, user2 string, limit uint32, before int
 	msg := Message{}
 	var ts string
 	for rows.Next() {
-		err := rows.Scan(&rowId, &ts, &msg.Author, &msg.Content)
+		err := rows.Scan(&rowId, &ts, &msg.Author, &msg.Content, &msg.Metadata)
 		if err != nil {
 			return nil, math.MaxInt64, fmt.Errorf("unable to parse data from DB into message struct: %v", err)
 		}

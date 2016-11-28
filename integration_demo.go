@@ -87,6 +87,9 @@ func main() {
 	if got, want := conversation.Messages[0].Content, "https://www.youtube.com/watch?v=9bZkp7q19f0"; got != want {
 		log.Printf("Message content mismatch: got %v, want %v.", got, want)
 	}
+	if got, want := conversation.Messages[0].Metadata.GetVideo().Source, api.Video_YOUTUBE; got != want {
+		log.Printf("Message metadata mismatch for video source: got %v, want %v.", got, want)
+	}
 	if got, want := conversation.Messages[1].Content, "Can't complain. You?"; got != want {
 		log.Printf("Message content mismatch: got %v, want %v.", got, want)
 	}
