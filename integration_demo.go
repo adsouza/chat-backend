@@ -64,8 +64,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not send 2nd message: %v.", err)
 	}
-	_, err = client.SendMessage(context.Background(),
-		&api.SendMessageRequest{Sender: "testuser1", Recipient: "testuser2", Content: "Same here."})
+	_, err = client.SendMessage(context.Background(), &api.SendMessageRequest{
+		Sender:    "testuser1",
+		Recipient: "testuser2",
+		Content:   "https://www.youtube.com/watch?v=9bZkp7q19f0",
+	})
 	if err != nil {
 		log.Fatalf("Could not send 3rd message: %v.", err)
 	}
@@ -81,7 +84,7 @@ func main() {
 	if got, want := len(conversation.Messages), 2; got != want {
 		log.Fatalf("Conversation has wrong number of messages: got %v, want %v.", got, want)
 	}
-	if got, want := conversation.Messages[0].Content, "Same here."; got != want {
+	if got, want := conversation.Messages[0].Content, "https://www.youtube.com/watch?v=9bZkp7q19f0"; got != want {
 		log.Printf("Message content mismatch: got %v, want %v.", got, want)
 	}
 	if got, want := conversation.Messages[1].Content, "Can't complain. You?"; got != want {

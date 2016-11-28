@@ -94,3 +94,21 @@ func TestHappyPath(t *testing.T) {
 		t.Errorf("Message content mismatch: got %v, want %v.", got, want)
 	}
 }
+
+func TestVideoURL(t *testing.T) {
+	mockDb := &mockDb{
+		mockUserStore: mockUserStore{hashes: make(map[string][]byte)},
+		mockMsgStore:  mockMsgStore{conversations: make(map[string][]storage.Message)},
+	}
+	userCtlr := logic.NewUserController(&mockDb.mockUserStore)
+	if err := userCtlr.CreateUser("testuser1", "123456789abcdefg"); err != nil {
+		t.Fatalf("16 char passphrase was not permitted but should be.")
+	}
+	if err := userCtlr.CreateUser("testuser2", "123456789abcdefg"); err != nil {
+		t.Fatalf("2nd user account was not permitted but should be.")
+	}
+	msgCtlr := logic.NewMessageController(mockDb)
+	if err := msgCtlr.SendMessage("testuser1", "testuser2", "https://www.youtube.com/watch?v=9bZkp7q19f0"); err != nil {
+		t.Fatalf("Sending a YouTube URL failed: %v.", err)
+	}
+}
