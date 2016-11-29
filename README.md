@@ -21,7 +21,7 @@ The storage module has a SQL implementation that has been tested with SQLite3.
 
 ## Logic
 
-The logic module is pure Go and relies upon a storage interface for which an implementation is available in the corresponding module.
+The logic module relies upon storage interfaces for which an implementation is available in the storage module.
 
 ## API
 
