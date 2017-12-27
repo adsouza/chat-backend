@@ -1,7 +1,5 @@
 .PHONY: compile
-ifndef GOPATH
-	GOPATH=$(HOME)/go
-endif
+GOPATH?=$(HOME)/go
 PROTOC_GEN_GO := $(GOPATH)/bin/protoc-gen-go
 PROTOC := $(shell which protoc)
 # If protoc isn't on the path, set it to a target that's never up to date, so
@@ -41,6 +39,7 @@ compile: api/api.pb.go
 clean:
 	rm api/api.pb.go
 	go clean
+	rm chat.db
 
 test: compile
 	go test storage/sqlite_test.go
