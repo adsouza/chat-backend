@@ -23,7 +23,7 @@ type mockMsgStore struct {
 func (m *mockMsgStore) AddMessage(sender, recipient, content string, metadata []byte) error {
 	// Add the new message to the beginning.
 	conversationId := conversationIdFromParticipants(sender, recipient)
-	m.conversations[conversationId] = append([]storage.Message{storage.Message{Author: sender, Content: content}}, m.conversations[conversationId]...)
+	m.conversations[conversationId] = append([]storage.Message{{Author: sender, Content: content}}, m.conversations[conversationId]...)
 	return nil
 }
 
