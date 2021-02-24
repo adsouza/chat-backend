@@ -19,7 +19,7 @@ func NewUserController(db UserStore) *userController {
 	return &userController{db: db}
 }
 
-func (c *userController) CreateUser(username string, passphrase string) error {
+func (c *userController) CreateUser(username, passphrase string) error {
 	// Validate that password is long enough.
 	if len(passphrase) < 16 {
 		return fmt.Errorf("passphrase below 16 char minimum")
@@ -38,7 +38,7 @@ func (c *userController) CreateUser(username string, passphrase string) error {
 	return c.db.AddUser(username, hash)
 }
 
-func (c *userController) Authenticate(username string, passphrase string) error {
+func (c *userController) Authenticate(username, passphrase string) error {
 	hash, err := c.db.FetchHash(username)
 	if err != nil {
 		return fmt.Errorf("authentication failed because hashed passphrase currently unavailable from storage: %v.", err)
